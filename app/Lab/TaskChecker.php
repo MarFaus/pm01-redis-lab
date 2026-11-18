@@ -32,7 +32,7 @@ class TaskChecker
         return [
             'strings' => [
                 'done' => $strings->count() >= 4,
-                'detail' => "Строковых ключей: {$strings->count()} из 4.",
+                'detail' => "Строковых ключей: {$strings->count()}, нужно минимум 4.",
             ],
             'ttl' => [
                 'done' => $withTtl->count() >= 3,
@@ -42,12 +42,12 @@ class TaskChecker
             ],
             'hash' => [
                 'done' => $hashes->count() >= 3,
-                'detail' => "Хешей с четырьмя и более полями: {$hashes->count()} из 3.",
+                'detail' => "Хешей с четырьмя и более полями: {$hashes->count()}, нужно минимум 3.",
             ],
             'counters' => [
                 'done' => $counters->count() >= 3,
                 'detail' => $counters->count()
-                    ? "Счётчиков: {$counters->count()} из 3. Больше всех у {$leader['key']}: ".trim($leader['preview'], '"').'.'
+                    ? "Счётчиков: {$counters->count()}, нужно минимум 3. Больше всех у {$leader['key']}: ".trim($leader['preview'], '"').'.'
                     : 'Счётчиков *views* пока нет.',
             ],
             'sets' => [

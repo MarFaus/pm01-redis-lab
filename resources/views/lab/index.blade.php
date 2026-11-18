@@ -62,9 +62,9 @@
             <div class="task__body">
                 <p>Маршруты из методички уже есть в <code>routes/web.php</code>:</p>
                 <ul class="task__links">
-                    <li><a href="{{ route('task.redis-test') }}" target="_blank">/redis-test</a> — SET и GET через фасад Redis</li>
-                    <li><a href="{{ route('task.views', 1) }}" target="_blank">/events/1/views</a> — INCR, ответ в JSON</li>
-                    <li><a href="{{ route('task.events-cache') }}" target="_blank">/events-cache</a> — Cache::remember, доп. задание</li>
+                    <li><a href="{{ route('task.redis-test') }}" target="_blank">/redis-test</a>: SET и GET через фасад Redis</li>
+                    <li><a href="{{ route('task.views', 1) }}" target="_blank">/events/1/views</a>: INCR, ответ в JSON</li>
+                    <li><a href="{{ route('task.events-cache') }}" target="_blank">/events-cache</a>: Cache::remember из доп. задания</li>
                 </ul>
             </div>
         </div>

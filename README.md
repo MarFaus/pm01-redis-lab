@@ -1,58 +1,151 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Касса 6379
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Учебный проект по ПМ01, практическая работа «Знакомство с Redis. Создание и управление данными в оперативной памяти».
 
-## About Laravel
+Это афиша мероприятий на Laravel, в которой Redis делает видимую работу: кеширует список, считает просмотры и уникальных зрителей, строит рейтинг. Плюс «Лаборатория»: консоль redis-cli прямо в браузере, где выполняются задания 2–6 из методички, и панель, на которой видно, как ключи появляются и истекают.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Название взято от порта: Redis по умолчанию слушает 6379.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+![PHP 8.3+](https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white)
+![Laravel 13](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
+![Redis 7](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)
+![Тесты](https://img.shields.io/badge/тесты-43%20зелёных-1F7A4D)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+![Афиша: билеты с живыми просмотрами и чек запроса](docs/screenshots/afisha.png)
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Запуск
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/MarFaus/pm01-redis-lab.git
+cd pm01-redis-lab
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Дальше просто двойной клик по **`start.bat`**. Браузер откроется сам.
 
-## Contributing
+Батник ничего не требует заранее. Он проверяет компьютер и докачивает то, чего не хватает:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Шаг | Что проверяет | Если не нашёл |
+|---|---|---|
+| 1. PHP | `php` версии 8.3+ с нужными расширениями | качает переносной PHP 8.3, включает расширения, при необходимости ставит Visual C++ Runtime |
+| 2. Composer | `composer` в системе | качает `composer.phar` и ставит пакеты из `composer.lock` |
+| 3. `.env` | файл настроек | создаёт из `.env.example` и генерирует `APP_KEY` |
+| 4. База | `database/database.sqlite` | создаёт, накатывает миграции, заполняет 12 мероприятиями |
+| 5. Redis | порт 6379 | запускает контейнер `redis-learning` в Docker, как в методичке. Если Docker нет, предлагает поставить его через winget или запускает переносной Redis для Windows |
+| 6. Сайт | свободный порт с 8000 | `php artisan serve` и открывает браузер |
 
-## Code of Conduct
+Всё скачанное лежит в `.tools/` и в git не попадает. Повторный запуск занимает несколько секунд.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Остановить сайт: закрыть окно или нажать Ctrl+C. Остановить Redis: **`stop.bat`**.
 
-## Security Vulnerabilities
+Нужны только Windows 10/11 и интернет при первом запуске. Права администратора нужны только для установки Docker или Visual C++ Runtime, и батник спросит о них через окно UAC.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Что есть в проекте
 
-## License
+### Афиша
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Каждое мероприятие сделано как кассовый билет: цвет бумаги зависит от категории, а на корешке написано, сколько раз билет открывали и сколько было разных зрителей. Справа лежит «чек запроса». Он показывает, откуда пришёл список, за сколько миллисекунд и сколько SQL-запросов понадобилось. Первый заход после сброса кеша идёт в базу (около 18 мс, 1 запрос), следующие берутся из Redis (около 0,5 мс, 0 запросов). Цифры настоящие и меряются на каждом запросе.
+
+### Страница мероприятия
+
+![Страница мероприятия со штампом просмотра и журналом команд Redis](docs/screenshots/event.png)
+
+При открытии страницы на корешке появляется штамп с номером просмотра. Справа выводится журнал: какие команды Redis выполнились и что они вернули. Если открыть страницу второй раз из того же браузера, `SADD` вернёт 0 и уникальных зрителей не прибавится.
+
+Здесь же можно поменять цену. После сохранения модель удаляет из Redis `events:list` и `event:{id}`, поэтому старая цена не висит в кеше ещё 5 минут. Это ответ на вопрос из дополнительного задания.
+
+### Лаборатория
+
+![Лаборатория: задания, консоль и панель ключей](docs/screenshots/lab.png)
+
+- **Задания 2–6** из методички. Команды кликаются: одинарный клик подставляет команду в консоль, двойной сразу выполняет. Кнопка «Проверить задание» смотрит на реальное содержимое Redis и говорит, что сделано, а чего не хватает.
+- **Консоль** работает как `redis-cli`: кавычки, кириллица, история по стрелке ↑ и такой же формат ответов (`(integer) 3`, `(nil)`, нумерованные списки).
+- **Панель ключей** показывает тип, TTL и значение каждого ключа. TTL тикает каждую секунду, истёкшие ключи исчезают. Перебор идёт через `SCAN`, а не через `KEYS *`. Вкладка «Сайт» показывает, что хранит в Redis сама афиша.
+
+Консоль пишет в отдельную базу Redis (№ 2), поэтому даже `FLUSHDB` не сотрёт просмотры афиши. Команды, которые могут навредить (`CONFIG`, `SELECT`, `FLUSHALL`, `SHUTDOWN`, `EVAL`), запрещены. Лимит 60 команд в минуту сделан на `INCR` + `EXPIRE`, это тот самый Rate Limiting из лекции.
+
+<img src="docs/screenshots/mobile.png" width="300" alt="Мобильная версия афиши">
+
+## Где здесь Redis
+
+| Ключ | Тип | Где используется | TTL |
+|---|---|---|---|
+| `events:list` | String (кеш Laravel) | список на афише и `/events-cache` | 300 с |
+| `event:{id}` | Hash | карточка мероприятия: name, city, venue, price… | 300 с |
+| `event:{id}:views` | String + `INCR` | просмотры, корешок билета | нет |
+| `event:{id}:visitors` | Set | уникальные зрители по cookie | нет |
+| `events:rating` | Sorted Set | блок «Чаще всего смотрят», `ZREVRANGE` | нет |
+| `ratelimit:lab:{посетитель}` | String + `INCR`/`EXPIRE` | лимит команд в консоли | 60 с |
+
+Базы Redis разделены: 0 для сайта, 1 для кеша Laravel, 2 для лаборатории. Тесты используют базы 10–12 и рабочие данные не трогают.
+
+## Соответствие методичке
+
+| Задание | Где сделано |
+|---|---|
+| 1. Установка и запуск Redis | `start.bat` поднимает `redis:7` в контейнере `redis-learning`. В лаборатории это отмечено галочкой с версией сервера |
+| 2. Строки | Лаборатория, задание 2, автопроверка: 4 строковых ключа |
+| 3. TTL | Лаборатория, задание 3. В панели ключей видно, как ключ живёт и исчезает |
+| 4. Hash | Лаборатория, задание 4. На сайте карточка мероприятия кешируется в Hash `event:{id}` |
+| 5. Счётчик просмотров | Лаборатория, задание 5. На сайте `INCR event:{id}:views` при каждом открытии |
+| 6. Set и Sorted Set | Лаборатория, задание 6. На сайте уникальные зрители и рейтинг |
+| 7. Redis в Laravel | Predis, `.env`, маршруты [`/redis-test`](http://127.0.0.1:8000/redis-test) и [`/events/{id}/views`](http://127.0.0.1:8000/events/1/views) в `routes/web.php` |
+| Доп. задание: кеширование | [`/events-cache`](http://127.0.0.1:8000/events-cache) и афиша через `Cache::remember('events:list', 300, …)`, драйвер `CACHE_STORE=redis` |
+
+Маршруты из методички оставлены почти дословно. В `/events/{id}/views` добавлена одна строка `ZINCRBY`, чтобы рейтинг не расходился со счётчиком.
+
+## Ответы на дополнительные вопросы
+
+**Почему кеш снижает нагрузку на базу?** Первый запрос строит список и кладёт его в Redis. Следующие 5 минут все посетители получают готовый список из памяти, а база вообще не получает запросов. Это видно в «чеке»: SQL-запросов 0.
+
+**Что будет, если мероприятие изменилось, а кеш остался?** Пользователи увидят старые данные, пока не истечёт TTL. Проверить можно так: поменяйте цену в базе в обход модели, например `php artisan tinker` и `DB::table('events')->where('id', 1)->update(['price' => 1])`. Афиша будет показывать старую цену, пока не нажать «Сбросить кеш» или не пройдёт 5 минут.
+
+**Как обновлять кеш после изменения?** Удалять ключи в момент изменения. В проекте это сделано в `App\Models\Event::booted()`: на событиях `saved` и `deleted` вызывается `Cache::forget('events:list')` и `DEL event:{id}`. Следующий запрос соберёт свежий кеш.
+
+**Почему нельзя хранить в Redis всё подряд?** Память дорогая и ограниченная, при сбое без настроенных RDB/AOF данные пропадут, и у Redis нет транзакций и связей уровня PostgreSQL. Заказы, оплаты и остатки билетов должны жить в основной базе, а Redis годится для производных и временных данных.
+
+## Запуск вручную, без батника
+
+```bash
+composer install
+copy .env.example .env
+php artisan key:generate
+type nul > database\database.sqlite
+php artisan migrate --seed
+docker run -d --name redis-learning -p 6379:6379 redis:7
+php artisan serve
+```
+
+Расширение `phpredis` не нужно: проект работает через Predis (`REDIS_CLIENT=predis`), который ставится через Composer.
+
+Чтобы перейти на PostgreSQL, как в лекции, включите в PHP расширение `pdo_pgsql`, поменяйте в `.env` блок `DB_*` на `DB_CONNECTION=pgsql` с хостом, базой и паролем и выполните `php artisan migrate --seed`. Код от этого не меняется.
+
+## Тесты
+
+```bash
+php artisan test
+```
+
+43 теста, 166 проверок. Среди них: промах и попадание кеша, сброс кеша после смены цены, счётчики и уникальные зрители, изоляция базы лаборатории, запрет опасных команд, лимит частоты, формат ответов как в `redis-cli`, экранирование HTML, работа сайта при выключенном Redis. Тестам нужен запущенный Redis; если его нет, они пропускаются, а не падают. Сценарии ручной проверки лежат в [docs/TEST-CASES.md](docs/TEST-CASES.md).
+
+## Если что-то пошло не так
+
+| Что видно | Что делать |
+|---|---|
+| Красная полоса «Сайт работает без Redis» | Redis не запущен. Запустите `start.bat` ещё раз или `docker start redis-learning` |
+| Docker Desktop долго стартует или просит войти | При первом запуске Docker нужно принять соглашение в его окне. Входить в аккаунт не обязательно |
+| Не скачивается PHP или пакеты | Нужен интернет без блокировки `windows.php.net`, `github.com`, `getcomposer.org`, `packagist.org` |
+| `start.bat` сразу закрывается | Запустите его из открытого окна `cmd`, тогда текст ошибки останется на экране |
+| Папка проекта с русскими буквами | Работает. Переносные PHP и Redis в этом случае кладутся в `C:\Users\Public\kassa6379-tools`, потому что `php artisan serve` ломается, если сам `php.exe` лежит в папке с кириллицей |
+
+## Устройство
+
+```
+app/Services/EventCatalog.php   кеш списка и карточек, сброс кеша
+app/Services/EventStats.php     просмотры, зрители, рейтинг
+app/Lab/CommandRunner.php       разбор и выполнение команд консоли
+app/Lab/KeyInspector.php        SCAN + TYPE/TTL для панели ключей
+app/Lab/TaskChecker.php         автопроверка заданий 2–6
+routes/web.php                  маршруты сайта и маршруты из методички
+scripts/start.ps1               логика start.bat
+public/css/app.css              весь дизайн, без сборщиков и Node.js
+```
