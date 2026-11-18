@@ -12,7 +12,12 @@ $Root = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $Root
 $Host.UI.RawUI.WindowTitle = 'Касса 6379'
 
+function Test-Ascii($path) { return -not ($path -match '[^\x00-\x7F]') }
+
+# php.exe, лежащий в папке с кириллицей, ломает `artisan serve` (дочерний
+# php -S получает испорченный путь). Поэтому инструменты кладём в папку на латинице.
 $Tools = Join-Path $Root '.tools'
+if (-not (Test-Ascii $Tools)) { $Tools = Join-Path $env:PUBLIC 'kassa6379-tools' }
 $Check = Join-Path $Root 'scripts\check.php'
 $Container = 'redis-learning'
 $PhpUrl = 'https://windows.php.net/downloads/releases/latest/php-8.3-nts-Win32-vs16-x64-latest.zip'
@@ -80,6 +85,7 @@ if (-not (Get-Command curl.exe -ErrorAction SilentlyContinue)) {
     Fail 'В системе нет curl.exe. Нужна Windows 10 версии 1803 или новее.'
 }
 if (-not (Test-Path -LiteralPath $Tools)) { New-Item -ItemType Directory -Path $Tools | Out-Null }
+if ($Tools -ne (Join-Path $Root '.tools')) { Info "В пути проекта есть кириллица, поэтому скачанные инструменты лежат в $Tools" }
 
 # ------------------------------------------------------------------ PHP
 Step 1 'PHP'
@@ -90,6 +96,11 @@ if (Test-Path -LiteralPath $LocalPhp) {
 } else {
     $found = Get-Command php.exe -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($found) { $PHP = $found.Source }
+}
+
+if ($PHP -and -not (Test-Ascii $PHP)) {
+    Info "PHP лежит в папке с не латинскими буквами ($PHP), с ним не работает artisan serve. Беру переносной."
+    $PHP = $null
 }
 
 if ($PHP -and -not (Test-Php $PHP)) {
