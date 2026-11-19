@@ -1,7 +1,13 @@
-# Касса 6379 (ПМ01, Redis)
+# Касса 6379: очереди (ПМ01, работа 49)
+
+Форк проекта 48-redis-lab: добавлены очереди (`/queue`, Jobs, `tasks/`).
 
 ## Запуск и тесты
-- Запуск: `start.bat` (логика в `scripts/start.ps1`), остановка Redis: `stop.bat`.
+- Запуск: `start.bat` (логика в `scripts/start.ps1`, он же открывает окно Worker
+  `queue:work redis` и ставит в `.env` `QUEUE_CONNECTION=redis`), остановка Redis: `stop.bat`.
+- Задания 1–2: `tasks.bat`. `pcntl_fork` только в Docker `php:8.3-cli`, без Docker идёт `concurrent-windows.php`.
+- Не проверено вживую: Worker + Redis целиком и ветка Docker в `tasks.bat` (Docker был выключен).
+- `artisan serve` однопоточный: пока идёт `/sync-order`, опрос статуса на `/queue` ждёт.
 - Тесты: `php artisan test` — нужен Redis на 6379, тесты пишут в базы Redis 10–12.
 - Redis дома: Docker-контейнер `redis-learning` (`redis:7`), `docker start redis-learning`.
 - Проверка батника «как в колледже»: клон в папку с кириллицей, PATH только System32,

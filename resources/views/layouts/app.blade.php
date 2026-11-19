@@ -26,6 +26,7 @@
         <nav class="nav" aria-label="Разделы">
             <a href="{{ route('events.index') }}" @class(['nav__link', 'is-active' => request()->routeIs('events.*')])>Афиша</a>
             <a href="{{ route('lab.index') }}" @class(['nav__link', 'is-active' => request()->routeIs('lab.*')])>Лаборатория</a>
+            <a href="{{ route('queue.index') }}" @class(['nav__link', 'is-active' => request()->routeIs('queue.*')])>Очереди</a>
         </nav>
 
         <div @class(['status', 'status--off' => ! $redis['online']]) role="status">
@@ -63,7 +64,7 @@
 
 <footer class="foot">
     <div class="foot__inner">
-        <p>ПМ01, практическая работа «Знакомство с Redis». Laravel {{ app()->version() }}, PHP {{ PHP_VERSION }}.</p>
+        <p>ПМ01: «Знакомство с Redis» и «Синхронная и асинхронная обработка задач». Laravel {{ app()->version() }}, PHP {{ PHP_VERSION }}.</p>
         <p>
             Маршруты из методички:
             <a href="{{ route('task.redis-test') }}">/redis-test</a>,

@@ -2,9 +2,13 @@
 
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\LabController;
+use App\Http\Controllers\QueueController;
+use App\Jobs\GenerateTicketDocument;
+use App\Jobs\SendOrderNotification;
 use App\Services\EventCatalog;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 
@@ -68,3 +72,70 @@ Route::get('/events-cache', function () {
             ->values()
     );
 })->name('task.events-cache');
+
+/*
+| ПМ01, работа 49: синхронная и асинхронная обработка, очереди Laravel.
+| Маршруты /sync-order и /async-order взяты из методички без изменений.
+*/
+Route::get('/queue', [QueueController::class, 'index'])->name('queue.index');
+Route::get('/queue/status', [QueueController::class, 'status'])->name('queue.status');
+
+Route::get('/async-order', function () {
+    $start = microtime(true);
+    // Имитация создания заказа
+    $orderId = 100;
+    // Передача задачи в очередь
+    SendOrderNotification::dispatch($orderId);
+    $time = microtime(true) - $start;
+
+    return response()->json([
+        'message' => 'Заказ создан',
+        'order_id' => $orderId,
+        'response_time' => round($time, 4),
+    ]);
+})->name('task.async-order');
+
+Route::get('/sync-order', function () {
+    $start = microtime(true);
+    $orderId = 101;
+    // Имитация длительной операции
+    sleep(3);
+    Log::info('Уведомление обработано синхронно', [
+        'order_id' => $orderId,
+    ]);
+
+    return response()->json([
+        'message' => 'Заказ обработан',
+        'order_id' => $orderId,
+        'response_time' => round(
+            microtime(true) - $start,
+            2
+        ),
+    ]);
+})->name('task.sync-order');
+
+// Дополнительная задача: формирование электронного билета в фоне.
+Route::get('/ticket-document', function () {
+    $start = microtime(true);
+    GenerateTicketDocument::dispatch(100);
+
+    return response()->json([
+        'message' => 'Формирование билета поставлено в очередь',
+        'order_id' => 100,
+        'response_time' => round(microtime(true) - $start, 4),
+    ]);
+})->name('task.ticket-document');
+
+// Вопрос из доп. задания: двойной клик отправляет одну и ту же задачу дважды.
+// Новый номер заказа на каждый вызов, чтобы демонстрацию можно было повторять.
+Route::get('/double-order', function () {
+    $orderId = random_int(1000, 9999);
+    SendOrderNotification::dispatch($orderId);
+    SendOrderNotification::dispatch($orderId);
+
+    return response()->json([
+        'message' => 'Одна и та же задача отправлена в очередь два раза',
+        'order_id' => $orderId,
+        'expected' => 'В журнале одно «Уведомление отправлено» и одно «Повтор задачи пропущен»',
+    ]);
+})->name('task.double-order');

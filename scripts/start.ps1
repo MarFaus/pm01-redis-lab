@@ -171,6 +171,14 @@ if (-not (Test-Path -LiteralPath '.env')) {
 } else {
     Info '.env на месте'
 }
+# Задание 5: очередь через Redis.
+$envText = [IO.File]::ReadAllText((Resolve-Path '.env'))
+if ($envText -notmatch '(?m)^QUEUE_CONNECTION=redis\s*$') {
+    $envText = [regex]::Replace($envText, '(?m)^QUEUE_CONNECTION=.*$', 'QUEUE_CONNECTION=redis')
+    if ($envText -notmatch '(?m)^QUEUE_CONNECTION=') { $envText += "`r`nQUEUE_CONNECTION=redis`r`n" }
+    [IO.File]::WriteAllText((Resolve-Path '.env'), $envText, (New-Object Text.UTF8Encoding($false)))
+    Info 'QUEUE_CONNECTION=redis'
+}
 
 # ----------------------------------------------------------------- База
 Step 4 'База данных SQLite'
@@ -285,12 +293,16 @@ Write-Host ''
 Write-Host '  ------------------------------------------------------------'
 Write-Host "  Готово. Сайт: $url" -ForegroundColor Green
 Write-Host "  Лаборатория: $url/lab"
+Write-Host "  Очереди:     $url/queue"
+Write-Host '  Worker очереди открыт в отдельном окне (php artisan queue:work redis).'
 Write-Host '  Остановить сайт: закройте это окно или нажмите Ctrl+C.'
 Write-Host '  Остановить Redis: stop.bat'
 Write-Host '  ------------------------------------------------------------'
 Write-Host ''
 
 if ($env:KASSA_NONINTERACTIVE -ne '1') {
+    # Второй терминал из методички: Worker забирает задачи из Redis.
+    Start-Process -FilePath $PHP -ArgumentList 'artisan', 'queue:work', 'redis', '--tries=3' -WorkingDirectory (Get-Location).Path
     Start-Job -ScriptBlock { param($u) Start-Sleep -Seconds 2; Start-Process $u } -ArgumentList $url | Out-Null
 }
 Artisan serve --host=127.0.0.1 --port=$port
