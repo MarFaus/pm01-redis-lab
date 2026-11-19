@@ -139,21 +139,16 @@ Info "PHP ${phpVersion}: $PHP"
 
 # ------------------------------------------------------------- Composer
 Step 2 'Composer и зависимости'
-$ComposerPhar = $null
-if (-not (Get-Command composer -ErrorAction SilentlyContinue)) {
-    $ComposerPhar = Join-Path $Tools 'composer.phar'
-    if (-not (Test-Path -LiteralPath $ComposerPhar)) {
-        Info 'Скачиваю composer.phar...'
-        Download $ComposerUrl $ComposerPhar
-    }
+# Системный composer не берём: он может быть привязан к другому PHP
+# (например, к PHP 8.2 из XAMPP). composer.phar всегда запускаем тем же PHP, что и сайт.
+$ComposerPhar = Join-Path $Tools 'composer.phar'
+if (-not (Test-Path -LiteralPath $ComposerPhar)) {
+    Info 'Скачиваю composer.phar...'
+    Download $ComposerUrl $ComposerPhar
 }
 
 if (-not (Test-Path -LiteralPath 'vendor\autoload.php')) { Info 'Первая установка пакетов, это займёт минуту...' }
-if ($ComposerPhar) {
-    & $PHP $ComposerPhar install --no-interaction --prefer-dist --no-progress
-} else {
-    & composer install --no-interaction --prefer-dist --no-progress
-}
+& $PHP $ComposerPhar install --no-interaction --prefer-dist --no-progress
 if ($LASTEXITCODE -ne 0) { Fail 'composer install завершился с ошибкой. Проверьте интернет и запустите start.bat ещё раз.' }
 Info 'vendor в порядке'
 
