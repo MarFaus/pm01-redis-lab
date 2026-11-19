@@ -11,9 +11,11 @@
 ## Запуск
 
 ```bash
-git clone https://github.com/MarFaus/pm01-queue-lab.git
+git clone -b 49-queue https://github.com/MarFaus/pm01-redis-lab.git pm01-queue-lab
 cd pm01-queue-lab
 ```
+
+Или скачать архив: [49-queue.zip](https://github.com/MarFaus/pm01-redis-lab/archive/refs/heads/49-queue.zip).
 
 | Файл | Что делает |
 |---|---|
