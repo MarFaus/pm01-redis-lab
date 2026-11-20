@@ -45,6 +45,40 @@
             <p class="lead">{{ $event['description'] }}</p>
         @endif
 
+        <form class="order-form" method="post" action="{{ route('orders.store') }}" novalidate>
+            @csrf
+            <input type="hidden" name="event_id" value="{{ $event['id'] }}">
+            <h2 class="side-title">Купить билет</h2>
+            <p class="muted">
+                Свободно {{ number_format($available, 0, '', ' ') }} из {{ number_format($event['tickets_total'], 0, '', ' ') }}.
+                Заказ сохранится в базе, а сообщение <code>order.created</code> уйдёт в RabbitMQ.
+                Consumer сделает PDF-билет, и он появится в разделе «Заказы».
+            </p>
+            <div class="order-form__grid">
+                <div class="field">
+                    <label for="customer_name">Имя</label>
+                    <input id="customer_name" name="customer_name" type="text" autocomplete="name" maxlength="255"
+                           value="{{ old('customer_name') }}" @error('customer_name') aria-invalid="true" @enderror>
+                    @error('customer_name') <p class="field__error">{{ $message }}</p> @enderror
+                </div>
+                <div class="field">
+                    <label for="customer_email">Электронная почта</label>
+                    <input id="customer_email" name="customer_email" type="email" autocomplete="email" maxlength="255"
+                           value="{{ old('customer_email') }}" @error('customer_email') aria-invalid="true" @enderror>
+                    @error('customer_email') <p class="field__error">{{ $message }}</p> @enderror
+                </div>
+                <div class="field">
+                    <label for="quantity">Билетов</label>
+                    <input id="quantity" name="quantity" type="number" min="1" max="10" inputmode="numeric"
+                           value="{{ old('quantity', 1) }}" @error('quantity') aria-invalid="true" @enderror>
+                    @error('quantity') <p class="field__error">{{ $message }}</p> @enderror
+                </div>
+            </div>
+            <button class="btn" type="submit" @disabled($available < 1)>
+                {{ $available < 1 ? 'Билеты закончились' : 'Купить за '.\App\Support\Fmt::money($event['price']).' за билет' }}
+            </button>
+        </form>
+
         <form class="price-form" method="post" action="{{ route('events.price', $event['id']) }}" novalidate>
             @csrf
             @method('PATCH')

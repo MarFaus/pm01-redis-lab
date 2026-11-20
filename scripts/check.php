@@ -7,7 +7,7 @@
  *   php scripts/check.php ini <php.ini> — включить нужные расширения в переносном PHP
  */
 
-const NEED_EXT = ['openssl', 'mbstring', 'pdo_sqlite', 'sqlite3', 'fileinfo', 'curl', 'zip', 'tokenizer', 'ctype'];
+const NEED_EXT = ['openssl', 'mbstring', 'pdo_sqlite', 'sqlite3', 'fileinfo', 'curl', 'zip', 'tokenizer', 'ctype', 'sockets', 'dom'];
 
 $cmd = $argv[1] ?? '';
 

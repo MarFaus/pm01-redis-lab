@@ -286,6 +286,27 @@ h1, h2, h3, p { margin: 0; }
 
 .price-form { background: var(--panel); padding: 22px; border-radius: var(--radius); max-width: 620px; }
 .price-form .muted { font-size: 15px; margin-bottom: 16px; }
+
+/* ЛР 50: покупка билета и список заказов */
+.order-form { background: var(--white); border: 2px solid var(--ink); padding: 22px; border-radius: var(--radius); max-width: 620px; margin-bottom: 28px; }
+.order-form .muted { font-size: 15px; margin-bottom: 16px; }
+.order-form__grid { display: grid; grid-template-columns: 1fr 1fr 110px; gap: 14px; margin-bottom: 18px; }
+.order-form .field input { width: 100%; }
+.orders { width: 100%; border-collapse: collapse; background: var(--white); margin-top: 20px; font-size: 15px; }
+.orders th, .orders td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.orders th { font-size: 14px; color: var(--ink-2); font-weight: 600; }
+.orders td.num { font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+.orders__sub { color: var(--ink-3); font-size: 14px; }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.badge--pending { background: var(--paper-sport); }
+.badge--completed { background: var(--paper-tech); }
+.flash { padding: 14px 18px; border-left: 5px solid #1F7A4D; background: var(--white); margin-top: 16px; font-weight: 500; }
+.flash--error { border-left-color: var(--stamp); }
+.orders-wrap { overflow-x: auto; }
+@media (max-width: 640px) {
+    .order-form__grid { grid-template-columns: 1fr; }
+    .orders th:nth-child(5), .orders td:nth-child(5) { display: none; }
+}
 .field label { display: block; font-weight: 600; font-size: 15px; margin-bottom: 6px; }
 .field__row { display: flex; gap: 10px; flex-wrap: wrap; }
 .field input {

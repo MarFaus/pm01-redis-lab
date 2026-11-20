@@ -37,6 +37,7 @@ class EventSeeder extends Seeder
                 'venue' => $venue,
                 'price' => $price,
                 'tickets_total' => $tickets,
+                'available_tickets' => $tickets,
                 'description' => $description,
             ]);
         }

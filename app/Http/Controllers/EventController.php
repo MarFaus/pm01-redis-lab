@@ -60,6 +60,8 @@ class EventController extends Controller
 
         return view('events.show', [
             'event' => $card['card'],
+            // Остаток билетов меняется с каждым заказом, поэтому берём его из базы, а не из кеша карточки.
+            'available' => (int) Event::whereKey($id)->value('available_tickets'),
             'cardHit' => $card['hit'],
             'view' => $view,
             'log' => array_merge($card['log'], $view['log'] ?? []),

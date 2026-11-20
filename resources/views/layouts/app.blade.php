@@ -27,6 +27,7 @@
             <a href="{{ route('events.index') }}" @class(['nav__link', 'is-active' => request()->routeIs('events.*')])>Афиша</a>
             <a href="{{ route('lab.index') }}" @class(['nav__link', 'is-active' => request()->routeIs('lab.*')])>Лаборатория</a>
             <a href="{{ route('queue.index') }}" @class(['nav__link', 'is-active' => request()->routeIs('queue.*')])>Очереди</a>
+            <a href="{{ route('orders.index') }}" @class(['nav__link', 'is-active' => request()->routeIs('orders.*')])>Заказы</a>
         </nav>
 
         <div @class(['status', 'status--off' => ! $redis['online']]) role="status">

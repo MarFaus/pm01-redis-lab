@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\LabController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\QueueController;
 use App\Jobs\GenerateTicketDocument;
 use App\Jobs\SendOrderNotification;
@@ -72,6 +73,13 @@ Route::get('/events-cache', function () {
             ->values()
     );
 })->name('task.events-cache');
+
+/*
+| ЛР 50: заказы, RabbitMQ и PDF-билеты.
+*/
+Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+Route::get('/orders/{order}/ticket', [OrderController::class, 'downloadTicket'])->name('orders.ticket.download');
 
 /*
 | ПМ01, работа 49: синхронная и асинхронная обработка, очереди Laravel.

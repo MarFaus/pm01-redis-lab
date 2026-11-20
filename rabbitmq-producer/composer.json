@@ -1,0 +1,9 @@
+{
+    "name": "pm01/rabbitmq-producer",
+    "description": "ЛР 50, практическая работа 1: Producer для RabbitMQ",
+    "type": "project",
+    "require": {
+        "php": "^8.3",
+        "php-amqplib/php-amqplib": "^3.7"
+    }
+}

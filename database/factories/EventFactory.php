@@ -19,7 +19,8 @@ class EventFactory extends Factory
             'city' => fake()->randomElement(['Костанай', 'Астана', 'Алматы']),
             'venue' => 'Дворец культуры',
             'price' => fake()->numberBetween(20, 200) * 100,
-            'tickets_total' => fake()->numberBetween(50, 1000),
+            'tickets_total' => 100,
+            'available_tickets' => 100,
             'description' => null,
         ];
     }

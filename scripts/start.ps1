@@ -25,7 +25,7 @@ $RedisUrl = 'https://github.com/tporadowski/redis/releases/download/v5.0.14.1/Re
 $ComposerUrl = 'https://getcomposer.org/download/latest-stable/composer.phar'
 $VcRedistUrl = 'https://aka.ms/vs/17/release/vc_redist.x64.exe'
 
-function Step($n, $text) { Write-Host "[$n/6] $text" -ForegroundColor Cyan }
+function Step($n, $text) { Write-Host "[$n/7] $text" -ForegroundColor Cyan }
 function Info($text) { Write-Host "      $text" }
 function Fail($text) {
     Write-Host ''
@@ -101,6 +101,12 @@ if (Test-Path -LiteralPath $LocalPhp) {
 if ($PHP -and -not (Test-Ascii $PHP)) {
     Info "PHP лежит в папке с не латинскими буквами ($PHP), с ним не работает artisan serve. Беру переносной."
     $PHP = $null
+}
+
+# Переносной PHP от прошлого запуска: новым версиям проекта могут понадобиться
+# новые расширения (например, sockets для RabbitMQ). Включаем их, а не качаем PHP заново.
+if ($PHP -eq $LocalPhp -and -not (Test-Php $PHP)) {
+    & $PHP $Check ini (Join-Path $Tools 'php\php.ini')
 }
 
 if ($PHP -and -not (Test-Php $PHP)) {
@@ -195,7 +201,27 @@ function Find-Docker {
     return $null
 }
 
+function Start-DockerEngine($docker) {
+    & $docker info *> $null
+    if ($LASTEXITCODE -eq 0) { return $true }
+    $desktop = Join-Path $env:ProgramFiles 'Docker\Docker\Docker Desktop.exe'
+    if (-not (Test-Path -LiteralPath $desktop)) { return $false }
+    Info 'Запускаю Docker Desktop. Если он попросит принять соглашение, примите его в окне Docker.'
+    Start-Process -FilePath $desktop
+    $deadline = (Get-Date).AddMinutes(2)
+    do {
+        Start-Sleep -Seconds 3
+        & $docker info *> $null
+    } while ($LASTEXITCODE -ne 0 -and (Get-Date) -lt $deadline)
+    if ($LASTEXITCODE -ne 0) {
+        Info 'Docker Desktop не запустился за 2 минуты'
+        return $false
+    }
+    return $true
+}
+
 function Start-RedisDocker($docker) {
+    if (-not (Start-DockerEngine $docker)) { return $false }
     & $docker info *> $null
     if ($LASTEXITCODE -ne 0) {
         $desktop = Join-Path $env:ProgramFiles 'Docker\Docker\Docker Desktop.exe'
@@ -275,8 +301,36 @@ if (Test-Port 6379) {
     if (-not (Wait-Port 6379 20)) { Fail 'Redis так и не ответил на порту 6379.' }
 }
 
+# ------------------------------------------------------------- RabbitMQ
+Step 6 'RabbitMQ на 127.0.0.1:5672 (ЛР 50)'
+$Rabbit = 'rabbitmq-learning'
+$rabbitOk = Test-Port 5672
+if ($rabbitOk) {
+    Info 'RabbitMQ уже запущен'
+} else {
+    $docker = if ($env:KASSA_NO_DOCKER -eq '1') { $null } else { Find-Docker }
+    if ($docker -and (Start-DockerEngine $docker)) {
+        & $docker start $Rabbit *> $null
+        if ($LASTEXITCODE -ne 0) {
+            Info "Создаю контейнер $Rabbit из образа rabbitmq:4-management, в первый раз скачается около 150 МБ..."
+            & $docker run -d --name $Rabbit -p 5672:5672 -p 15672:15672 rabbitmq:4-management | Out-Null
+        }
+        if ($LASTEXITCODE -eq 0) {
+            Info 'Жду, пока RabbitMQ поднимется (до минуты)...'
+            $rabbitOk = Wait-Port 5672 60
+        }
+    }
+    if ($rabbitOk) {
+        Info "Контейнер $Rabbit запущен. Панель: http://localhost:15672 (guest / guest)"
+    } else {
+        Info 'RabbitMQ запустить не удалось: для него нужен Docker.' 
+        Info 'Сайт всё равно заработает: заказы сохранятся, но сообщения в RabbitMQ не уйдут.'
+    }
+}
+Artisan storage:link *> $null
+
 # --------------------------------------------------------------- Сервер
-Step 6 'Запуск сайта'
+Step 7 'Запуск сайта'
 Artisan config:clear | Out-Null
 Artisan cache:clear *> $null
 
@@ -289,15 +343,19 @@ Write-Host '  ------------------------------------------------------------'
 Write-Host "  Готово. Сайт: $url" -ForegroundColor Green
 Write-Host "  Лаборатория: $url/lab"
 Write-Host "  Очереди:     $url/queue"
-Write-Host '  Worker очереди открыт в отдельном окне (php artisan queue:work redis).'
+Write-Host "  Заказы:      $url/orders"
+Write-Host '  RabbitMQ:    http://localhost:15672 (guest / guest)'
+Write-Host '  В отдельных окнах: Worker (queue:work redis) и Consumer (rabbitmq:consume).'
 Write-Host '  Остановить сайт: закройте это окно или нажмите Ctrl+C.'
-Write-Host '  Остановить Redis: stop.bat'
+Write-Host '  Остановить Redis и RabbitMQ: stop.bat'
 Write-Host '  ------------------------------------------------------------'
 Write-Host ''
 
 if ($env:KASSA_NONINTERACTIVE -ne '1') {
     # Второй терминал из методички: Worker забирает задачи из Redis.
     Start-Process -FilePath $PHP -ArgumentList 'artisan', 'queue:work', 'redis', '--tries=3' -WorkingDirectory (Get-Location).Path
+    # Третий терминал из ЛР 50: Consumer RabbitMQ. Если брокер ещё не готов, он сам переподключится.
+    Start-Process -FilePath $PHP -ArgumentList 'artisan', 'rabbitmq:consume' -WorkingDirectory (Get-Location).Path
     Start-Job -ScriptBlock { param($u) Start-Sleep -Seconds 2; Start-Process $u } -ArgumentList $url | Out-Null
 }
 Artisan serve --host=127.0.0.1 --port=$port

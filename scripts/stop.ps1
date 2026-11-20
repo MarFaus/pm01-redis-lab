@@ -7,6 +7,8 @@ if (-not $docker) {
     if (Test-Path -LiteralPath $path) { $docker = $path }
 }
 if ($docker) {
+    & $docker stop rabbitmq-learning *> $null
+    if ($LASTEXITCODE -eq 0) { Write-Host 'Контейнер rabbitmq-learning остановлен.' }
     & $docker stop redis-learning *> $null
     if ($LASTEXITCODE -eq 0) { Write-Host 'Контейнер redis-learning остановлен. Данные сохранятся до следующего start.bat.' }
 }

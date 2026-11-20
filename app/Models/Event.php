@@ -6,6 +6,7 @@ use App\Services\EventCatalog;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Мероприятие. Основные данные живут в SQL-базе, Redis хранит только
@@ -25,7 +26,7 @@ class Event extends Model
     ];
 
     protected $fillable = [
-        'name', 'category', 'starts_at', 'city', 'venue', 'price', 'tickets_total', 'description',
+        'name', 'category', 'starts_at', 'city', 'venue', 'price', 'tickets_total', 'available_tickets', 'description',
     ];
 
     protected function casts(): array
@@ -34,6 +35,7 @@ class Event extends Model
             'starts_at' => 'datetime',
             'price' => 'integer',
             'tickets_total' => 'integer',
+            'available_tickets' => 'integer',
         ];
     }
 
@@ -42,6 +44,11 @@ class Event extends Model
         // Данные изменились: старый кеш больше не правда, удаляем его.
         static::saved(fn (Event $event) => app(EventCatalog::class)->forget($event->id));
         static::deleted(fn (Event $event) => app(EventCatalog::class)->forget($event->id));
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 
     public function categoryLabel(): string
