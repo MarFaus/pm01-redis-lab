@@ -290,7 +290,7 @@ h1, h2, h3, p { margin: 0; }
 /* ЛР 50: покупка билета и список заказов */
 .order-form { background: var(--white); border: 2px solid var(--ink); padding: 22px; border-radius: var(--radius); max-width: 620px; margin-bottom: 28px; }
 .order-form .muted { font-size: 15px; margin-bottom: 16px; }
-.order-form__grid { display: grid; grid-template-columns: 1fr 1fr 110px; gap: 14px; margin-bottom: 18px; }
+.order-form__grid { display: grid; grid-template-columns: 1fr 1.3fr 90px; gap: 14px; margin-bottom: 18px; align-items: start; }
 .order-form .field input { width: 100%; }
 .orders { width: 100%; border-collapse: collapse; background: var(--white); margin-top: 20px; font-size: 15px; }
 .orders th, .orders td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }

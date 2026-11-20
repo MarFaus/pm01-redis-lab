@@ -48,12 +48,16 @@ try {
     $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
     $channel = $connection->channel();
     $channel->queue_declare($queue, false, true, false, false);
+    // Подтверждения публикации: дождёмся, что брокер принял все сообщения, прежде чем считать их.
+    $channel->confirm_select();
 
     foreach ($events as $i => $event) {
         $message = makeMessage($orderId, $userId, $event);
         $channel->basic_publish($message, '', $queue);
         echo ($i + 1).". {$event}: ".$message->getBody()."\n";
     }
+
+    $channel->wait_for_pending_acks(5);
 
     // Пассивная проверка возвращает число сообщений в очереди
     [, $count] = $channel->queue_declare($queue, true);

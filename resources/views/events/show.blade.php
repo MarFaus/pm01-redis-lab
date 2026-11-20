@@ -62,7 +62,7 @@
                     @error('customer_name') <p class="field__error">{{ $message }}</p> @enderror
                 </div>
                 <div class="field">
-                    <label for="customer_email">Электронная почта</label>
+                    <label for="customer_email">Почта</label>
                     <input id="customer_email" name="customer_email" type="email" autocomplete="email" maxlength="255"
                            value="{{ old('customer_email') }}" @error('customer_email') aria-invalid="true" @enderror>
                     @error('customer_email') <p class="field__error">{{ $message }}</p> @enderror

@@ -34,6 +34,9 @@ try {
     $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
     $channel = $connection->channel();
 
+    // Подтверждения публикации: брокер сообщит, что принял каждое сообщение.
+    $channel->confirm_select();
+
     // 1. Direct Exchange
     $channel->exchange_declare($exchange, AMQPExchangeType::DIRECT, false, true, false);
 
@@ -65,6 +68,8 @@ try {
         );
         echo "Отправлено с ключом {$routingKey}: {$body}\n";
     }
+
+    $channel->wait_for_pending_acks(5);
 
     echo "\nСообщений в очередях:\n";
     foreach ($bindings as $queue) {

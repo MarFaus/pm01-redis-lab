@@ -65,7 +65,7 @@
 
 <footer class="foot">
     <div class="foot__inner">
-        <p>ПМ01: «Знакомство с Redis» и «Синхронная и асинхронная обработка задач». Laravel {{ app()->version() }}, PHP {{ PHP_VERSION }}.</p>
+        <p>ПМ01, ЛР 48–50: Redis, очереди Laravel, RabbitMQ. Laravel {{ app()->version() }}, PHP {{ PHP_VERSION }}.</p>
         <p>
             Маршруты из методички:
             <a href="{{ route('task.redis-test') }}">/redis-test</a>,
